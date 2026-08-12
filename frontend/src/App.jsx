@@ -127,7 +127,23 @@ function Navigation() {
 function Dashboard() {
 
   const transactions =
-  JSON.parse(localStorage.getItem("transactions")) || [];
+    JSON.parse(localStorage.getItem("transactions")) || [];
+
+  const transactionIncome = transactions
+    .filter((transaction) => transaction.type === "income")
+    .reduce(
+      (total, transaction) =>
+        total + Number(transaction.amount || 0),
+      0
+    );
+
+  const transactionExpenses = transactions
+    .filter((transaction) => transaction.type === "expense")
+    .reduce(
+      (total, transaction) =>
+        total + Number(transaction.amount || 0),
+      0
+    );
 
   const [income, setIncome] = useState("");
 
@@ -153,29 +169,35 @@ function Dashboard() {
 
   /* TOTAL EXPENSES */
 
-  const totalExpenses = expenses.reduce(
-    (total, expense) =>
-      total + Number(expense.amount || 0),
-    0
-  );
+  const manualTotalExpenses = expenses.reduce(
+  (total, expense) =>
+    total + Number(expense.amount || 0),
+  0
+);
+
+const totalExpenses =
+  transactions.length > 0
+    ? transactionExpenses
+    : manualTotalExpenses;
 
 
   /* SAVINGS */
 
-  const savings =
-    Number(income || 0) - totalExpenses;
+  const dashboardIncome =
+  transactions.length > 0
+    ? transactionIncome
+    : Number(income || 0);
+
+const savings =
+  dashboardIncome - totalExpenses;
 
 
   /* SAVINGS RATE */
 
   const savingsRate =
-    Number(income) > 0
-      ? (
-          (savings / Number(income)) *
-          100
-        ).toFixed(1)
-      : 0;
-
+  dashboardIncome > 0
+    ? ((savings / dashboardIncome) * 100).toFixed(1)
+    : 0;
 
   /* UPDATE EXPENSE */
 
@@ -375,22 +397,21 @@ function Dashboard() {
 
           <input
             type="number"
-            placeholder="Enter income"
-            value={income}
-            onChange={(e) =>
-              setIncome(
-                e.target.value
-              )
+            placeholder={
+            transactions.length > 0
+            ? "Income managed in Transactions"
+            : "Enter income"
             }
+            value={income}
+           onChange={(e) =>
+           setIncome(e.target.value)
+            }
+           disabled={transactions.length > 0}
           />
 
           <h2>
-            ₹
-            {Number(
-              income || 0
-            ).toLocaleString()}
+           ₹{dashboardIncome.toLocaleString()}
           </h2>
-
         </div>
 
 
