@@ -15,7 +15,9 @@ function Reports() {
     transactions
       .filter((item) => item.type === "expense")
       .forEach((item) => {
-        const category = item.category || "Other";
+       const category =
+           String(item.category || "Other")
+            .trim() || "Other";
 
         data[category] =
           (data[category] || 0) +
@@ -25,7 +27,9 @@ function Reports() {
     if (Object.keys(data).length === 0 && history.length > 0) {
       history.forEach((month) => {
         (month.expenses || []).forEach((expense) => {
-          const category = expense.name || "Other";
+          const category =
+            String(expense.name || "Other")
+             .trim() || "Other";
 
           data[category] =
             (data[category] || 0) +
@@ -39,13 +43,24 @@ function Reports() {
     );
   }, [transactions, history]);
 
-  const totalIncome = transactions
-    .filter((item) => item.type === "income")
-    .reduce(
-      (total, item) =>
-        total + Number(item.amount || 0),
-      0
-    );
+  const transactionIncome = transactions
+  .filter((item) => item.type === "income")
+  .reduce(
+    (total, item) =>
+      total + Number(item.amount || 0),
+    0
+  );
+
+const historyIncome = history.reduce(
+  (total, month) =>
+    total + Number(month.income || 0),
+  0
+);
+
+const totalIncome =
+  transactionIncome > 0
+    ? transactionIncome
+    : historyIncome;
 
   const transactionExpenses = transactions
     .filter((item) => item.type === "expense")
@@ -68,6 +83,9 @@ function Reports() {
 
   const balance =
     totalIncome - totalExpenses;
+
+    const transactionCount =
+  transactions.length;
 
   const highestCategory =
     categoryData.length > 0
@@ -150,14 +168,22 @@ function Reports() {
         </div>
 
         <div className="summary-card rate-card">
-          <p>Top Expense</p>
+  <p>Top Expense</p>
 
-          <h2>
-            {highestCategory
-              ? highestCategory[0]
-              : "No data"}
-          </h2>
-        </div>
+  <h2>
+    {highestCategory
+      ? highestCategory[0]
+      : "No data"}
+  </h2>
+
+  <span>
+    {highestCategory
+      ? `₹${Number(
+          highestCategory[1]
+        ).toLocaleString()}`
+      : `${transactionCount} transactions`}
+  </span>
+</div>
 
       </section>
 
