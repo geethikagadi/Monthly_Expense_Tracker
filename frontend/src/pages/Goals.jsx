@@ -11,52 +11,66 @@ function Goals() {
   const [saved, setSaved] = useState("");
 
   const addGoal = () => {
-    if (!name || !target) {
-      alert("Please enter goal name and target amount.");
-      return;
-    }
+  const goalName = name.trim();
+  const targetAmount = Number(target);
+  const savedAmount = Number(saved || 0);
 
-    const newGoal = {
-      id: Date.now(),
-      name,
-      target: Number(target),
-      saved: Number(saved || 0),
-      createdAt: new Date().toLocaleDateString("en-IN"),
-    };
+  if (!goalName || targetAmount <= 0) {
+    alert("Please enter a goal name and a valid target amount.");
+    return;
+  }
 
-    const updatedGoals = [...goals, newGoal];
+  if (savedAmount < 0) {
+    alert("Saved amount cannot be negative.");
+    return;
+  }
 
-    setGoals(updatedGoals);
-
-    localStorage.setItem(
-      "expenseGoals",
-      JSON.stringify(updatedGoals)
-    );
-
-    setName("");
-    setTarget("");
-    setSaved("");
-
-    alert("Goal created successfully!");
+  const newGoal = {
+    id: Date.now(),
+    name: goalName,
+    target: targetAmount,
+    saved: savedAmount,
+    createdAt: new Date().toLocaleDateString("en-IN"),
   };
 
+  const updatedGoals = [...goals, newGoal];
+
+  setGoals(updatedGoals);
+
+  localStorage.setItem(
+    "expenseGoals",
+    JSON.stringify(updatedGoals)
+  );
+
+  setName("");
+  setTarget("");
+  setSaved("");
+
+  alert("Goal created successfully!");
+};
   const updateSaved = (id, value) => {
-    const updatedGoals = goals.map((goal) =>
-      goal.id === id
-        ? {
-            ...goal,
-            saved: Number(value || 0),
-          }
-        : goal
-    );
+  const savedAmount = Number(value || 0);
 
-    setGoals(updatedGoals);
+  if (savedAmount < 0) {
+    return;
+  }
 
-    localStorage.setItem(
-      "expenseGoals",
-      JSON.stringify(updatedGoals)
-    );
-  };
+  const updatedGoals = goals.map((goal) =>
+    goal.id === id
+      ? {
+          ...goal,
+          saved: savedAmount,
+        }
+      : goal
+  );
+
+  setGoals(updatedGoals);
+
+  localStorage.setItem(
+    "expenseGoals",
+    JSON.stringify(updatedGoals)
+  );
+};
 
   const deleteGoal = (id) => {
     const updatedGoals = goals.filter(
