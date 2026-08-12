@@ -27,19 +27,23 @@ function Budget() {
     JSON.parse(localStorage.getItem("transactions")) || [];
 
   const getSpent = (category) => {
-    return transactions
-      .filter(
-        (transaction) =>
-          transaction.type === "expense" &&
-          transaction.category.toLowerCase() ===
-            category.toLowerCase()
-      )
-      .reduce(
-        (total, transaction) =>
-          total + Number(transaction.amount || 0),
-        0
-      );
-  };
+  return transactions
+    .filter(
+      (transaction) =>
+        transaction.type === "expense" &&
+        String(transaction.category || "")
+          .trim()
+          .toLowerCase() ===
+          String(category || "")
+            .trim()
+            .toLowerCase()
+    )
+    .reduce(
+      (total, transaction) =>
+        total + Number(transaction.amount || 0),
+      0
+    );
+};
 
   const updateBudget = (index, value) => {
     const updated = [...budgets];
@@ -184,14 +188,12 @@ function Budget() {
                 getSpent(item.category);
 
               const percentage =
-                item.budget > 0
-                  ? Math.min(
-                      (spent /
-                        item.budget) *
-                        100,
-                      100
-                    )
-                  : 0;
+               Number(item.budget) > 0
+                ? (spent / Number(item.budget)) * 100
+               : 0;
+
+               const isOverBudget =
+                spent > Number(item.budget || 0);
 
               return (
                 <div
@@ -267,27 +269,36 @@ function Budget() {
 
                     <div
                       className="budget-progress-bar"
-                      style={{
-                        width: `${percentage}%`,
-                      }}
+                     style={{
+                     width: `${Math.min(percentage, 100)}%`,
+                     }}
                     />
 
                   </div>
 
                   <div className="budget-progress-text">
 
-                    <span>
-                      {percentage.toFixed(1)}% used
-                    </span>
+                <span>
+                {percentage.toFixed(1)}% used
+                </span>
 
-                    <span>
-                      ₹{spent.toLocaleString()} /
-                      ₹{Number(
-                        item.budget || 0
-                      ).toLocaleString()}
-                    </span>
+              <span>
+              ₹{spent.toLocaleString()} /
+              ₹{Number(
+              item.budget || 0
+              ).toLocaleString()}
+             </span>
 
-                  </div>
+              </div>
+
+              {isOverBudget && (
+              <p className="budget-warning">
+               ⚠️ Budget exceeded by ₹
+              {(
+               spent - Number(item.budget || 0)
+                ).toLocaleString()}
+                </p>
+                 )}
 
                 </div>
               );
