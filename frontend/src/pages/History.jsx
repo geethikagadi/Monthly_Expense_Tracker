@@ -4,101 +4,66 @@ import "./History.css";
 function History() {
   const [history, setHistory] = useState([]);
   const [selectedMonth, setSelectedMonth] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
 
   useEffect(() => {
-    fetch("http://127.0.0.1:8000/api/expenses")
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error("Failed to load history");
-        }
+    const savedHistory =
+      JSON.parse(localStorage.getItem("expenseHistory")) || [];
 
-        return response.json();
-      })
-      .then((data) => {
-        setHistory(data);
-        setLoading(false);
-      })
-      .catch((err) => {
-        console.error(err);
-        setError("Unable to load expense history.");
-        setLoading(false);
-      });
+    setHistory(savedHistory);
   }, []);
 
-  /* GROUP DATABASE RECORDS BY MONTH */
+  const deleteMonth = (monthToDelete) => {
+    const confirmed = window.confirm(
+      `Delete ${monthToDelete} history?`
+    );
 
-  const groupedHistory = history.reduce((groups, expense) => {
-    if (!groups[expense.month]) {
-      groups[expense.month] = {
-        month: expense.month,
-        income: Number(expense.income || 0),
-        expenses: [],
-      };
+    if (!confirmed) {
+      return;
     }
 
-    groups[expense.month].expenses.push({
-      id: expense.id,
-      name: expense.category,
-      amount: Number(expense.amount || 0),
-    });
+    const updatedHistory = history.filter(
+      (month) => month.month !== monthToDelete
+    );
 
-    return groups;
-  }, {});
+    setHistory(updatedHistory);
 
-  const months = Object.values(groupedHistory).map((month) => {
-    const totalExpenses = month.expenses.reduce(
-      (sum, expense) => sum + Number(expense.amount || 0),
+    localStorage.setItem(
+      "expenseHistory",
+      JSON.stringify(updatedHistory)
+    );
+
+    setSelectedMonth(null);
+  };
+
+  /* GROUP / CALCULATE MONTH DATA */
+
+  const months = history.map((month) => {
+    const expenses = month.expenses || [];
+
+    const totalExpenses = expenses.reduce(
+      (sum, expense) =>
+        sum + Number(expense.amount || 0),
       0
     );
 
-    const savings = month.income - totalExpenses;
+    const income = Number(month.income || 0);
+
+    const savings = income - totalExpenses;
 
     const savingsRate =
-      month.income > 0
-        ? ((savings / month.income) * 100).toFixed(1)
+      income > 0
+        ? ((savings / income) * 100).toFixed(1)
         : 0;
 
     return {
       ...month,
+      income,
+      expenses,
       totalExpenses,
       savings,
       savingsRate,
     };
   });
-
-  /* LOADING */
-
-  if (loading) {
-    return (
-      <main className="main-container page-content">
-        <div className="page-header">
-          <h1>Expense History</h1>
-        </div>
-
-        <div className="empty-page">
-          <h2>Loading history...</h2>
-        </div>
-      </main>
-    );
-  }
-
-  /* ERROR */
-
-  if (error) {
-    return (
-      <main className="main-container page-content">
-        <div className="page-header">
-          <h1>Expense History</h1>
-        </div>
-
-        <div className="empty-page">
-          <h2>{error}</h2>
-        </div>
-      </main>
-    );
-  }
 
   /* MONTH DETAILS */
 
@@ -121,7 +86,7 @@ function History() {
       (expense, index) => {
         const percentage =
           total > 0
-            ? (expense.amount / total) * 100
+            ? (Number(expense.amount || 0) / total) * 100
             : 0;
 
         const startAngle = currentAngle;
@@ -161,8 +126,20 @@ function History() {
         <div className="page-header">
           <div>
             <h1>{selectedMonth.month}</h1>
-            <p>Monthly expense details</p>
+
+            <p>
+              Monthly expense details
+            </p>
           </div>
+
+          <button
+            className="delete-history-button"
+            onClick={() =>
+              deleteMonth(selectedMonth.month)
+            }
+          >
+            Delete Month
+          </button>
         </div>
 
         {/* SUMMARY */}
@@ -220,23 +197,32 @@ function History() {
 
             <h2>Expense Breakdown</h2>
 
-            {selectedMonth.expenses.map(
-              (expense) => (
-                <div
-                  className="history-expense-row"
-                  key={expense.id}
-                >
-                  <span>
-                    {expense.name}
-                  </span>
+            {selectedMonth.expenses.length === 0 ? (
+              <div className="empty-page">
+                <p>No expenses recorded.</p>
+              </div>
+            ) : (
+              selectedMonth.expenses.map(
+                (expense, index) => (
+                  <div
+                    className="history-expense-row"
+                    key={
+                      expense.id ||
+                      `${expense.name}-${index}`
+                    }
+                  >
+                    <span>
+                      {expense.name}
+                    </span>
 
-                  <strong>
-                    ₹
-                    {expense.amount.toLocaleString(
-                      "en-IN"
-                    )}
-                  </strong>
-                </div>
+                    <strong>
+                      ₹
+                      {Number(
+                        expense.amount || 0
+                      ).toLocaleString("en-IN")}
+                    </strong>
+                  </div>
+                )
               )
             )}
 
@@ -266,35 +252,33 @@ function History() {
 
             <div className="history-chart-legend">
 
-              {pieParts.map(
-                (expense) => (
-                  <div
-                    className="legend-item"
-                    key={expense.id}
-                  >
+              {pieParts.map((expense, index) => (
+                <div
+                  className="legend-item"
+                  key={
+                    expense.id ||
+                    `${expense.name}-${index}`
+                  }
+                >
 
-                    <span
-                      className="legend-dot"
-                      style={{
-                        background:
-                          expense.color,
-                      }}
-                    />
+                  <span
+                    className="legend-dot"
+                    style={{
+                      background:
+                        expense.color,
+                    }}
+                  />
 
-                    <span>
-                      {expense.name}
-                    </span>
+                  <span>
+                    {expense.name}
+                  </span>
 
-                    <strong>
-                      {expense.percentage.toFixed(
-                        1
-                      )}
-                      %
-                    </strong>
+                  <strong>
+                    {expense.percentage.toFixed(1)}%
+                  </strong>
 
-                  </div>
-                )
-              )}
+                </div>
+              ))}
 
             </div>
 
@@ -312,20 +296,28 @@ function History() {
     <main className="main-container page-content">
 
       <div className="page-header">
+
         <div>
-          <h1>Expense History</h1>
+
+          <h1>
+            Expense History
+          </h1>
 
           <p>
             View your previous monthly expenses.
           </p>
+
         </div>
+
       </div>
 
       {months.length === 0 ? (
 
         <div className="empty-page">
 
-          <h2>No History Yet</h2>
+          <h2>
+            No History Yet
+          </h2>
 
           <p>
             Save your first month's expenses
@@ -361,21 +353,37 @@ function History() {
 
                   </div>
 
-                  <button
-                    className="view-details-button"
-                    onClick={() =>
-                      setSelectedMonth(month)
-                    }
-                  >
-                    View Details →
-                  </button>
+                  <div className="history-actions">
+
+                    <button
+                      className="view-details-button"
+                      onClick={() =>
+                        setSelectedMonth(month)
+                      }
+                    >
+                      View Details →
+                    </button>
+
+                    <button
+                      className="delete-history-button"
+                      onClick={() =>
+                        deleteMonth(month.month)
+                      }
+                    >
+                      Delete
+                    </button>
+
+                  </div>
 
                 </div>
 
                 <div className="history-summary">
 
                   <div>
-                    <span>Income</span>
+
+                    <span>
+                      Income
+                    </span>
 
                     <strong>
                       ₹
@@ -383,10 +391,14 @@ function History() {
                         "en-IN"
                       )}
                     </strong>
+
                   </div>
 
                   <div>
-                    <span>Expenses</span>
+
+                    <span>
+                      Expenses
+                    </span>
 
                     <strong>
                       ₹
@@ -394,10 +406,14 @@ function History() {
                         "en-IN"
                       )}
                     </strong>
+
                   </div>
 
                   <div>
-                    <span>Savings</span>
+
+                    <span>
+                      Savings
+                    </span>
 
                     <strong>
                       ₹
@@ -405,14 +421,19 @@ function History() {
                         "en-IN"
                       )}
                     </strong>
+
                   </div>
 
                   <div>
-                    <span>Savings Rate</span>
+
+                    <span>
+                      Savings Rate
+                    </span>
 
                     <strong>
                       {month.savingsRate}%
                     </strong>
+
                   </div>
 
                 </div>
