@@ -1,0 +1,95 @@
+.settings-card {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 18px;
+  padding: 28px;
+  margin-top: 25px;
+}
+
+.settings-card-header {
+  margin-bottom: 22px;
+}
+
+.settings-card-header h2 {
+  margin: 0 0 6px;
+}
+
+.settings-card-header p {
+  margin: 0;
+  color: #64748b;
+}
+
+.settings-form {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.settings-field {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.settings-field label {
+  font-weight: 600;
+}
+
+.settings-field input,
+.settings-field select {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #d5dce8;
+  border-radius: 8px;
+  font-size: 15px;
+  background: white;
+}
+
+.save-settings-button {
+  margin-top: 20px;
+  padding: 12px 20px;
+  border: none;
+  border-radius: 8px;
+  background: #2563eb;
+  color: white;
+  font-size: 15px;
+  cursor: pointer;
+}
+
+.clear-data-button {
+  padding: 12px 20px;
+  border: none;
+  border-radius: 8px;
+  background: #fee2e2;
+  color: #dc2626;
+  font-size: 15px;
+  cursor: pointer;
+}
+
+.logout-settings-button {
+  padding: 12px 20px;
+  border: none;
+  border-radius: 8px;
+  background: #dc2626;
+  color: white;
+  font-size: 15px;
+  cursor: pointer;
+}
+
+.save-settings-button:hover {
+  background: #1d4ed8;
+}
+
+.clear-data-button:hover {
+  background: #fecaca;
+}
+
+.logout-settings-button:hover {
+  background: #b91c1c;
+}
+
+@media (max-width: 700px) {
+  .settings-form {
+    grid-template-columns: 1fr;
+  }
+}

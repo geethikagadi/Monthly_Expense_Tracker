@@ -1,0 +1,111 @@
+.transaction-form-card,
+.transaction-list-card {
+  background: white;
+  border-radius: 18px;
+  padding: 28px;
+  margin-top: 25px;
+  border: 1px solid #e2e8f0;
+}
+
+.transaction-form-card h2,
+.transaction-list-card h2 {
+  margin-bottom: 22px;
+}
+
+.transaction-form {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 18px;
+}
+
+.transaction-form label {
+  display: block;
+  margin-bottom: 7px;
+  font-weight: 600;
+}
+
+.transaction-form input,
+.transaction-form select {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #d5dce8;
+  border-radius: 8px;
+  font-size: 15px;
+}
+
+.add-transaction-button {
+  grid-column: span 2;
+  padding: 13px;
+  border: none;
+  border-radius: 8px;
+  background: #2563eb;
+  color: white;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.transaction-table {
+  width: 100%;
+}
+
+.transaction-table-header,
+.transaction-row {
+  display: grid;
+  grid-template-columns:
+    1fr
+    0.8fr
+    1fr
+    1.5fr
+    1fr
+    0.8fr;
+
+  gap: 15px;
+  align-items: center;
+  padding: 15px 10px;
+}
+
+.transaction-table-header {
+  font-weight: 700;
+  border-bottom: 2px solid #e5e7eb;
+}
+
+.transaction-row {
+  border-bottom: 1px solid #edf0f4;
+}
+
+.income-text {
+  color: #16a34a;
+}
+
+.expense-text {
+  color: #dc2626;
+}
+
+.delete-transaction {
+  border: none;
+  background: #fee2e2;
+  color: #dc2626;
+  padding: 7px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+@media (max-width: 800px) {
+
+  .transaction-form {
+    grid-template-columns: 1fr;
+  }
+
+  .add-transaction-button {
+    grid-column: span 1;
+  }
+
+  .transaction-table {
+    overflow-x: auto;
+  }
+
+  .transaction-table-header,
+  .transaction-row {
+    min-width: 850px;
+  }
+}
